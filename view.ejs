@@ -1,0 +1,151 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Simple Video Chat</title>
+  <script src="http://code.jquery.com/jquery-1.9.1.min.js" type="text/javascript"></script>
+  <script type="text/javascript" src="https://swww.tokbox.com/webrtc/v2.0/js/TB.min.js"></script>
+  <script src="http://feather.aviary.com/js/feather.js" type="text/javascript"></script>
+  <style type="text/css">
+    #bigCanvas{
+      position: fixed;
+      top: -1000px;
+    }
+    #videos{
+      text-align:center;
+    }
+    #videos > div{
+      text-align: left;
+    }
+    #videos div{
+      display:inline-block;
+    }
+    #imageContainer{
+      width: 960px;
+      overflow: auto;
+      margin:auto;
+    }
+  </style>
+</head>
+<body>
+  <div id="videos">
+    <div id="myPublisherDiv"></div>
+  </div>
+
+  <div id="imageContainer">
+    <img id="resultImage" src="" alt="" />
+  </div>
+  <button id="takePicture">takePicture</button>
+  <button id="makeImage">makeImage</button>
+  <canvas id="bigCanvas"></canvas>
+	
+  <script type="text/javascript">
+    // Initialize API key, session, and token, generated from server side
+    var apiKey = "<%= OpenTokKey %>";
+    var sessionId = "<%= sessionId %>";
+    var token = "<%= token %>";
+    var publisher;
+    var subscribers = [];
+    var canvas = document.getElementById("bigCanvas");
+
+    // Enable console logs for debugging
+    TB.setLogLevel(TB.DEBUG);
+
+    // Initialize session, set up event listeners, and connect
+    var session = TB.initSession(sessionId);
+    session.addEventListener('sessionConnected', sessionConnectedHandler);
+    session.addEventListener('streamCreated', streamCreatedHandler);
+    session.connect(apiKey, token);
+    
+    function sessionConnectedHandler(event) {
+      // Create publisher and start streaming into the session
+      publisher = TB.initPublisher(apiKey, 'myPublisherDiv', {width:320, height:240});
+      session.publish(publisher);
+
+      // Subscribe to streams that were in the session when we connected
+      subscribeToStreams(event.streams);
+    }
+
+    function streamCreatedHandler(event) {
+      // Subscribe to any new streams that are created
+      subscribeToStreams(event.streams);
+    }
+
+    function subscribeToStreams(streams) {
+      for (var i = 0; i < streams.length; i++) {
+        // Make sure we don't subscribe to ourself
+        if (streams[i].connection.connectionId == session.connection.connectionId) {
+          return;
+        }
+
+        // Create the div to put the subscriber element in to
+        var div = document.createElement('div');
+        div.setAttribute('id', 'stream' + streams[i].streamId);
+        $("#videos").append( div );
+
+        // Subscribe to the stream
+        subscribers.push( session.subscribe(streams[i], div.id, {width:320, height:240}) );
+      }
+    }
+    
+    var featherEditor = new Aviary.Feather({
+        apiKey: '',
+        apiVersion: 2,
+        image: 'resultImage',
+        onSave: function(imageID, newURL) {
+          $("body").append( newURL );
+          featherEditor.close();
+          return false;
+        }
+    });
+
+    $("#takePicture").click( function(){
+      var imgData = ["data:image/png;base64,"+publisher.getImgData()];
+
+      // Populate array of images
+      for( var i=0; i<subscribers.length; i++){
+        if( subscribers[i] ){
+          var data = subscribers[i].getImgData();
+          if( data && data.length > 10 ){
+            imgData.push( "data:image/png;base64," + data );
+          }
+        }
+      }
+
+      // Combine images into one big canvas
+      var images = [];
+      var totalWidth = 0;
+      var maxHeight = 0;
+      for( var i=0; i<imgData.length; i++){
+        var img = new Image();
+        img.src = imgData[i];
+        img.onload = function(){
+          totalWidth += this.width;
+          if( this.height > maxHeight ){
+            maxHeight = this.height;
+          }
+        };
+        images.push( img );
+      }
+      window.canvas = canvas;
+      $("#resultImage").attr( 'src', "" );
+      $("#makeImage").click(function(){
+        canvas.width = totalWidth;
+        canvas.height = maxHeight;
+        var ctx = canvas.getContext('2d');
+        var startX = 0;
+        for( var i=0; i<images.length; i++){
+          ctx.drawImage( images[i], startX, 0 );
+          startX += images[i].width;
+        }
+        
+        var data = canvas.toDataURL("image/png");
+        $("#resultImage").attr("src", data);
+        featherEditor.launch();
+      });
+    });
+  </script>
+</body>
+</html>
+
+

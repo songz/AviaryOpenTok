@@ -1,0 +1,11 @@
+{
+    "name":"NodeOpenTok",
+    "version":"0.0.1",
+    "dependencies":{
+      "opentok":"",
+      "http":"",
+      "fs":"",
+      "ejs":"",
+      "express":""
+    }
+}

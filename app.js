@@ -11,6 +11,7 @@ app.use(express.static(__dirname + '/public'));
 // OpenTok Constants for creating Session and Token values
 var OTKEY = process.env.TB_KEY;
 var OTSECRET = process.env.TB_SECRET;
+var AviaryKey = process.env.AVIARY_KEY;
 
 // Setup when server first starts
 var urlSessions = {}; // mapping url to OpenTok Sessions
@@ -24,7 +25,7 @@ var htmlString = fs.readFileSync('./view.ejs', 'utf8');
 // Write response after all data (session Id, token) is ready
 function generateResponse( sessionId, responder ){
   var token = OpenTok.generateToken( {session_id: sessionId} );
-  var data = {OpenTokKey:OTKEY, sessionId: sessionId, token:token};
+  var data = {OpenTokKey:OTKEY, sessionId: sessionId, token:token, AviaryKey: AviaryKey};
   responder.writeHead(200);
   responder.end( ejs.render(htmlString, data) );
 }

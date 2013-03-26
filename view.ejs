@@ -21,9 +21,10 @@
       display:inline-block;
     }
     #imageContainer{
-      width: 960px;
+      width: 1024px;
       overflow: auto;
       margin:auto;
+      white-space:nowrap;
     }
   </style>
 </head>
@@ -33,7 +34,6 @@
   </div>
 
   <div id="imageContainer">
-    <img id="resultImage" src="" alt="" />
   </div>
   <button id="takePicture">takePicture</button>
   <button id="makeImage">makeImage</button>
@@ -44,8 +44,7 @@
     var apiKey = "<%= OpenTokKey %>";
     var sessionId = "<%= sessionId %>";
     var token = "<%= token %>";
-    var publisher;
-    var subscribers = [];
+    var videoStreamers = [];
     var canvas = document.getElementById("bigCanvas");
 
     // Enable console logs for debugging
@@ -59,11 +58,12 @@
     
     function sessionConnectedHandler(event) {
       // Create publisher and start streaming into the session
-      publisher = TB.initPublisher(apiKey, 'myPublisherDiv', {width:320, height:240});
+      var publisher = TB.initPublisher(apiKey, 'myPublisherDiv', {width:320, height:240});
       session.publish(publisher);
-
-      // Subscribe to streams that were in the session when we connected
       subscribeToStreams(event.streams);
+
+      // Keep track of video streams so we can take pictures later
+      videoStreamers.push( publisher );
     }
 
     function streamCreatedHandler(event) {
@@ -84,12 +84,12 @@
         $("#videos").append( div );
 
         // Subscribe to the stream
-        subscribers.push( session.subscribe(streams[i], div.id, {width:320, height:240}) );
+        videoStreamers.push( session.subscribe(streams[i], div.id, {width:320, height:240}) );
       }
     }
     
     var featherEditor = new Aviary.Feather({
-        apiKey: '',
+        apiKey: '<%= AviaryKey %>',
         apiVersion: 2,
         image: 'resultImage',
         onSave: function(imageID, newURL) {
@@ -100,46 +100,44 @@
     });
 
     $("#takePicture").click( function(){
-      var imgData = ["data:image/png;base64,"+publisher.getImgData()];
+      $("#imageContainer").html("");
+      var totalWidth = 0;
+      var maxHeight = 0;
 
       // Populate array of images
-      for( var i=0; i<subscribers.length; i++){
-        if( subscribers[i] ){
-          var data = subscribers[i].getImgData();
+      for( var i=0; i<videoStreamers.length; i++){
+        if( videoStreamers[i] ){
+          var data = videoStreamers[i].getImgData();
           if( data && data.length > 10 ){
-            imgData.push( "data:image/png;base64," + data );
+            var img = new Image();
+            img.src = "data:image/png;base64," + data;
+            img.onload = function(){
+              totalWidth += this.width;
+              if( this.height > maxHeight ){
+                maxHeight = this.height;
+              }
+            };
+            $("#imageContainer").append( img );
           }
         }
       }
 
-      // Combine images into one big canvas
-      var images = [];
-      var totalWidth = 0;
-      var maxHeight = 0;
-      for( var i=0; i<imgData.length; i++){
-        var img = new Image();
-        img.src = imgData[i];
-        img.onload = function(){
-          totalWidth += this.width;
-          if( this.height > maxHeight ){
-            maxHeight = this.height;
-          }
-        };
-        images.push( img );
-      }
-      window.canvas = canvas;
-      $("#resultImage").attr( 'src', "" );
       $("#makeImage").click(function(){
         canvas.width = totalWidth;
         canvas.height = maxHeight;
         var ctx = canvas.getContext('2d');
         var startX = 0;
+
+        var images = $("#imageContainer img");
         for( var i=0; i<images.length; i++){
           ctx.drawImage( images[i], startX, 0 );
           startX += images[i].width;
         }
         
         var data = canvas.toDataURL("image/png");
+        $("#imageContainer").html( "" );
+        var resultImage = $("<img />", {id: "resultImage"});
+        $("#imageContainer").append( resultImage );
         $("#resultImage").attr("src", data);
         featherEditor.launch();
       });

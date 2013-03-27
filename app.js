@@ -20,7 +20,7 @@ var urlSessions = {}; // mapping url to OpenTok Sessions
 var OpenTok = new OTSDK.OpenTokSDK(OTKEY, OTSECRET);
 
 // read view Template into a string
-var htmlString = fs.readFileSync('./view.ejs', 'utf8'); 
+var htmlString = fs.readFileSync('./views/view.ejs', 'utf8'); 
 
 // Write response after all data (session Id, token) is ready
 function generateResponse( sessionId, responder ){
@@ -32,8 +32,11 @@ function generateResponse( sessionId, responder ){
 
 // Start Server
 app.get("/", function( req, res ){
-  var sessionId = '2_MX4yMDc1MjM4MX5-TW9uIE1hciAyNSAxMzo0NDoxNiBQRFQgMjAxM34wLjE3NjkzMzQ3fg';
-  generateResponse( sessionId, res );
+  res.writeHead(302, {
+    'Location': Date.now()
+    //add other headers here...
+  });
+  res.end();
 });
 
 app.get("/:room", function(req, res){
@@ -51,4 +54,7 @@ app.get("/:room", function(req, res){
   console.log( urlSessions );
 });
 
-app.listen(9393);
+var port = process.env.PORT || 5000;
+app.listen(port, function() {
+  console.log("Listening on " + port);
+});

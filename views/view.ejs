@@ -6,38 +6,35 @@
   <script src="http://code.jquery.com/jquery-1.9.1.min.js" type="text/javascript"></script>
   <script type="text/javascript" src="https://swww.tokbox.com/webrtc/v2.0/js/TB.min.js"></script>
   <script src="http://feather.aviary.com/js/feather.js" type="text/javascript"></script>
-  <style type="text/css">
-    #bigCanvas{
-      position: fixed;
-      top: -1000px;
-    }
-    #videos{
-      text-align:center;
-    }
-    #videos > div{
-      text-align: left;
-    }
-    #videos div{
-      display:inline-block;
-    }
-    #imageContainer{
-      width: 1024px;
-      overflow: auto;
-      margin:auto;
-      white-space:nowrap;
-    }
-  </style>
+  <link rel="stylesheet" href="/app.css" />
 </head>
 <body>
-  <div id="videos">
-    <div id="myPublisherDiv"></div>
+  <div id="overlay">
+    <div id="internalContainer">
+      <img src="/success.png" alt="" />
+      <img src="http://featherfiles.aviary.com/2013-03-26/g0IDiU3rYkelwco0JelY7Q/c10d195e91624196924d207e645e77f0.png" id="aviaryResult" alt="" />
+      <div id="saveInfo">To save the picture, right click, select Save Image As ...</div>
+      <span id="closeOverlay" class="aButton">Close</span>
+    </div>
   </div>
 
-  <div id="imageContainer">
+  <div id="bodyContainer">
+    <div id="imageContainer"> 
+      <img src="/logo2.png" alt="" id="logoImg" />
+    </div>
+    <img id="stepTwo" src="/two.png" alt="" />
+    <img id="stepThree" src="/three.png" alt="" />
+    <div id="buttonControls">
+      <span id="takePicture" class="aButton">takePicture</span>
+      <span id="makeImage" class="aButton">makeImage</span>
+    </div>
+    <div id="videos">
+      <div id="myPublisherDiv"></div>
+    </div>
   </div>
-  <button id="takePicture">takePicture</button>
-  <button id="makeImage">makeImage</button>
   <canvas id="bigCanvas"></canvas>
+
+  <img id="stepOne" src="/one.png" alt="" />
 	
   <script type="text/javascript">
     // Initialize API key, session, and token, generated from server side
@@ -47,8 +44,8 @@
     var videoStreamers = [];
     var canvas = document.getElementById("bigCanvas");
 
-    // Enable console logs for debugging
-    TB.setLogLevel(TB.DEBUG);
+    // Create publisher and start streaming into the session
+    var publisher = TB.initPublisher(apiKey, 'myPublisherDiv', {width:320, height:240});
 
     // Initialize session, set up event listeners, and connect
     var session = TB.initSession(sessionId);
@@ -57,8 +54,6 @@
     session.connect(apiKey, token);
     
     function sessionConnectedHandler(event) {
-      // Create publisher and start streaming into the session
-      var publisher = TB.initPublisher(apiKey, 'myPublisherDiv', {width:320, height:240});
       session.publish(publisher);
       subscribeToStreams(event.streams);
 
@@ -93,8 +88,9 @@
         apiVersion: 2,
         image: 'resultImage',
         onSave: function(imageID, newURL) {
-          $("body").append( newURL );
           featherEditor.close();
+          $("#aviaryResult").attr("src", newURL);
+          $("#overlay").slideDown('fast');
           return false;
         }
     });
@@ -141,6 +137,10 @@
         $("#resultImage").attr("src", data);
         featherEditor.launch();
       });
+    });
+
+    $("#closeOverlay").click(function(){
+        $("#overlay").slideUp('fast');
     });
   </script>
 </body>

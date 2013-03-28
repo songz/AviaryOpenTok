@@ -1,2 +1,6 @@
-# Getting started with NodeJS and OpenTok
-This repo is designed to get you 
+# OpenTok and Aviary - Online Photo Booth App
+Demo: http://aviaryopentok.herokuapp.com/
+
+## File Directory
+`app.js` - Server side code to generate OpenTok sessionIds and corresponding tokens
+`views/view.js` - Client side code for html, css, and javascript

@@ -86,7 +86,6 @@
     var featherEditor = new Aviary.Feather({
         apiKey: '<%= AviaryKey %>',
         apiVersion: 2,
-        image: 'resultImage',
         onSave: function(imageID, newURL) {
           featherEditor.close();
           $("#aviaryResult").attr("src", newURL);
@@ -135,7 +134,9 @@
         var resultImage = $("<img />", {id: "resultImage"});
         $("#imageContainer").append( resultImage );
         $("#resultImage").attr("src", data);
-        featherEditor.launch();
+        featherEditor.launch({
+          image: 'resultImage'
+        });
       });
     });
 

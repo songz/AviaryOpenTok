@@ -20,31 +20,19 @@ body{
 }
 #imageContainer{
   text-align: center;
-  width: 1280px;
+  width: 980px;
+  height: 365px;
   overflow: auto;
   white-space:nowrap;
   position: absolute;
   top: 50px;
   left: 50%;
-  margin-left: -640px;
-  height: 480px;
-}
-#stepThree{
-  position:absolute;
-  bottom: 260px;
-  right: 20px;
-  z-index: 6;
-}
-#stepTwo{
-  position:absolute;
-  bottom: 260px;
-  left: 20px;
-  z-index: 6;
+  margin-left: -490px;
 }
 #buttonControls{
   text-align:center;
   position:absolute;
-  bottom: 280px;
+  bottom: 310px;
   width: 100%;
   z-index: 5;
 }
@@ -64,15 +52,15 @@ body{
 }
 #bodyContainer{
   position: fixed;
-  width: 1280px;
-  height: 900px;
+  width: 980px;
+  height: 760px;
   top:50%;
-  margin-top: -450px;
+  margin-top: -380px;
   left: 50%;
-  margin-left: -640px;
+  margin-left: -490px;
 }
 #logoImg{
-  margin-top: 100px;
+  margin-top: 40px;
 }
 
 #overlay{

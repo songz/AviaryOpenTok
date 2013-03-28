@@ -1,60 +1,71 @@
-// Required modules, Listed in the order of importance
-var OTSDK = require('opentok'); // OpenTok API for live video streaming
-var http = require('http');     // Listen to HTTP Requests
-var fs = require('fs');         // Read files
-var express = require('express');         // Read files
-var ejs = require('ejs');       // Templating Engine
+// ***
+// *** Required modules, Listed in the order of importance
+// ***
+var OpenTokLibrary = require('opentok');
+var StaticFileReader = require('fs');
+var TemplatingEngine = require('ejs');
+var express = require('express');
 
-var app = express();
-app.use(express.static(__dirname + '/public'));
-
-// OpenTok Constants for creating Session and Token values
+// ***
+// *** OpenTok Constants for creating Session and Token values
+// ***
 var OTKEY = process.env.TB_KEY;
 var OTSECRET = process.env.TB_SECRET;
 var AviaryKey = process.env.AVIARY_KEY;
 
-// Setup when server first starts
-var urlSessions = {}; // mapping url to OpenTok Sessions
+// ***
+// *** Setup when server first starts
+// ***
+var urlSessions = {};
+var OpenTokObject = new OpenTokLibrary.OpenTokSDK(OTKEY, OTSECRET);
 
-// Initialize OpenTok Object
-var OpenTok = new OTSDK.OpenTokSDK(OTKEY, OTSECRET);
+// ***
+// *** Setup Express to handle static files in public folder
+// *** Express is also great for handling url routing
+// ***
+var app = express();
+app.use(express.static(__dirname + '/public'));
+app.set( 'views', __dirname + "/views");
+app.set( 'view engine', 'ejs' );
 
-// read view Template into a string
-var htmlString = fs.readFileSync('./views/view.ejs', 'utf8'); 
-
-// Write response after all data (session Id, token) is ready
-function generateResponse( sessionId, responder ){
-  var token = OpenTok.generateToken( {session_id: sessionId} );
-  var data = {OpenTokKey:OTKEY, sessionId: sessionId, token:token, AviaryKey: AviaryKey};
-  responder.writeHead(200);
-  responder.end( ejs.render(htmlString, data) );
-}
-
-// Start Server
+// ***
+// *** When user goes to root directory, redirect them to a room (timestamp)
+// ***
 app.get("/", function( req, res ){
-  res.writeHead(302, {
-    'Location': Date.now()
-    //add other headers here...
-  });
+  res.writeHead(302, { 'Location': Date.now() });
   res.end();
 });
 
+// ***
+// *** When user goes to root directory, redirect them to a room (timestamp)
+// *** If sessionId does not exist for url, create one
+// ***
 app.get("/:room", function(req, res){
-  if(urlSessions[ req.params.room ] == undefined){ // No OpenTok sessionId for url
-    var clientIP = req.connection.remoteAddress;
-    OpenTok.createSession(clientIP, function(sessionId){
-      // sessionId received. Generate token and write response
+  if(urlSessions[ req.params.room ] == undefined){
+    OpenTokObject.createSession(function(sessionId){
       urlSessions[ req.params.room ] = sessionId;
-      generateResponse( sessionId, res );
+      sendResponse( sessionId, res );
     });
   }else{
-    // sessionId exists, use it to generate token and write response
-    generateResponse( urlSessions[ req.params.room], res );
+    sessionId = urlSessions[req.params.room];
+    sendResponse( sessionId, res );
   }
-  console.log( urlSessions );
 });
 
-var port = process.env.PORT || 5000;
-app.listen(port, function() {
-  console.log("Listening on " + port);
-});
+// ***
+// *** start server, listen to port (predefined or 9393)
+// ***
+var port = process.env.PORT || 9393;
+app.listen(port);
+
+// ***
+// *** All sessionIds need a corresponding token
+// *** generateToken and then sendResponse based on ejs template
+// ***
+function sendResponse( sessionId, responder ){
+  var token = OpenTokObject.generateToken( {session_id: sessionId} );
+  var data = {OpenTokKey:OTKEY, sessionId: sessionId, token:token, AviaryKey: AviaryKey};
+  responder.render( 'index', data );
+}
+
+

@@ -22,11 +22,11 @@
     <div id="imageContainer"> 
       <img src="/logo2.png" alt="" id="logoImg" />
     </div>
-    <img id="stepTwo" src="/two.png" alt="" />
-    <img id="stepThree" src="/three.png" alt="" />
     <div id="buttonControls">
+      <img id="stepTwo" src="/two.png" alt="" />
       <span id="takePicture" class="aButton">takePicture</span>
       <span id="makeImage" class="aButton">makeImage</span>
+      <img id="stepThree" src="/three.png" alt="" />
     </div>
     <div id="videos">
       <div id="myPublisherDiv"></div>
@@ -54,11 +54,11 @@
     session.connect(apiKey, token);
     
     function sessionConnectedHandler(event) {
-      session.publish(publisher);
-      subscribeToStreams(event.streams);
-
       // Keep track of video streams so we can take pictures later
       videoStreamers.push( publisher );
+
+      session.publish(publisher);
+      subscribeToStreams(event.streams);
     }
 
     function streamCreatedHandler(event) {
@@ -83,6 +83,7 @@
       }
     }
     
+    // Initialize Aviary's Feather editor
     var featherEditor = new Aviary.Feather({
         apiKey: '<%= AviaryKey %>',
         apiVersion: 2,
@@ -94,10 +95,13 @@
         }
     });
 
+    var totalWidth = 0;
+    var maxHeight = 0;
+
     $("#takePicture").click( function(){
       $("#imageContainer").html("");
-      var totalWidth = 0;
-      var maxHeight = 0;
+      totalWidth = 0;
+      maxHeight = 0;
 
       // Populate array of images
       for( var i=0; i<videoStreamers.length; i++){
@@ -111,33 +115,35 @@
               if( this.height > maxHeight ){
                 maxHeight = this.height;
               }
+              this.originalWidth = this.width;
+              this.originalHeight = this.height;
+              this.width = 320;
+              this.height = 240;
             };
             $("#imageContainer").append( img );
           }
         }
       }
+    });
 
-      $("#makeImage").click(function(){
-        canvas.width = totalWidth;
-        canvas.height = maxHeight;
-        var ctx = canvas.getContext('2d');
-        var startX = 0;
+    $("#makeImage").click(function(){
+      canvas.width = totalWidth;
+      canvas.height = maxHeight;
+      var ctx = canvas.getContext('2d');
+      var startX = 0;
 
-        var images = $("#imageContainer img");
-        for( var i=0; i<images.length; i++){
-          ctx.drawImage( images[i], startX, 0 );
-          startX += images[i].width;
-        }
-        
-        var data = canvas.toDataURL("image/png");
-        $("#imageContainer").html( "" );
-        var resultImage = $("<img />", {id: "resultImage"});
-        $("#imageContainer").append( resultImage );
-        $("#resultImage").attr("src", data);
-        featherEditor.launch({
-          image: 'resultImage'
-        });
-      });
+      var images = $("#imageContainer img");
+      for( var i=0; i<images.length; i++){
+        ctx.drawImage( images[i], startX, 0 );
+        startX += images[i].originalWidth;
+      }
+      
+      var data = canvas.toDataURL("image/png");
+      var resultImage$ = $("<img />", {id: "resultImage"});
+      resultImage$.attr({src:data, height:240});
+      window.resultImage = resultImage$;
+      $("#imageContainer").html( resultImage$ );
+      featherEditor.launch({ image: 'resultImage' });
     });
 
     $("#closeOverlay").click(function(){

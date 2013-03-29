@@ -111,3 +111,15 @@ body{
   right: 0px;
 }
 /* end of image */
+
+/* footer */
+footer{
+  position:fixed;
+  bottom: 10px;
+  right: 10px;
+  width: 250px;
+  background-color: rgba( 256, 256, 256, 0.8);
+  padding: 10px;
+  border-radius: 5px;
+}
+/* end of footer */

@@ -1,23 +1,17 @@
 body{
-  background-image:url(/bgline.png);
+  background-image:url(/images/bgline.png);
 }
-#bigCanvas{
+#bodyContainer{
   position: fixed;
-  top: -1000px;
+  width: 980px;
+  height: 760px;
+  top:50%;
+  margin-top: -380px;
+  left: 50%;
+  margin-left: -490px;
 }
-#videos{
-  text-align:center;
-  position:absolute;
-  bottom: 10px;
-  width: 100%;
-  z-index: 5;
-}
-#videos > div{
-  text-align: left;
-}
-#videos div{
-  display:inline-block;
-}
+
+/* div for showing pictures taken */
 #imageContainer{
   text-align: center;
   width: 980px;
@@ -29,6 +23,12 @@ body{
   left: 50%;
   margin-left: -490px;
 }
+#logoImg{
+  margin-top: 40px;
+}
+/* end of pictures taken */
+
+/* Buttons! */
 #buttonControls{
   text-align:center;
   position:absolute;
@@ -50,19 +50,32 @@ body{
   -webkit-transition: all 0.7s; /* Safari and Chrome */
   color: #fff;
 }
-#bodyContainer{
-  position: fixed;
-  width: 980px;
-  height: 760px;
-  top:50%;
-  margin-top: -380px;
-  left: 50%;
-  margin-left: -490px;
-}
-#logoImg{
-  margin-top: 40px;
-}
+/* end of buttons */
 
+/* div to contain all videos */
+#videos{
+  text-align:center;
+  position:absolute;
+  bottom: 10px;
+  width: 100%;
+  z-index: 5;
+}
+#videos > div{
+  text-align: left;
+}
+#videos div{
+  display:inline-block;
+}
+/* end of video container */
+
+/* canvas off screen, used to stitch images */
+#bigCanvas{
+  position: fixed;
+  top: -1000px;
+}
+/* end of off screen canvas */
+
+/* Overlay to show processed aviary picture */
 #overlay{
   position: fixed;
   top: 0;
@@ -74,7 +87,6 @@ body{
   color: #eee;
   display:none;
 }
-
 #internalContainer{
   margin-top: 100px;
   text-align:center;
@@ -90,10 +102,12 @@ body{
   display:inline-block;
   width: 120px;
 }
+/* end of overlay */
 
-
+/* step one image */
 #stepOne{
   position:fixed;
   top: 0px;
   right: 0px;
 }
+/* end of image */
